@@ -1,5 +1,5 @@
 """
-Base normalizer class for text normalization.
+Base verbalizer class for text normalization.
 All language-specific normalizers should inherit from this class.
 """
 
@@ -16,7 +16,7 @@ class BaseNormalizer(ABC):
     """
     
     def __init__(self):
-        """Initialize the normalizer with language-specific patterns."""
+        """Initialize the verbalizer with language-specific patterns."""
         self.patterns = self._get_patterns()
     
     @abstractmethod

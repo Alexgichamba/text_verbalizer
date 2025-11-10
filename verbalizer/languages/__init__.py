@@ -2,6 +2,6 @@
 Language-specific normalizers.
 """
 
-from .swahili import SwahiliNormalizer
+from .swahili import SwahiliVerbalizer
 
-__all__ = ['SwahiliNormalizer']
+__all__ = ['SwahiliVerbalizer']

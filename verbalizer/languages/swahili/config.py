@@ -1,4 +1,4 @@
-# normalizer/languages/swahili/config.py
+# verbalizer/languages/swahili/config.py
 
 """
 Swahili configuration and regex patterns.

@@ -1,4 +1,4 @@
-# normalizer/languages/swahili/currency.py
+# verbalizer/languages/swahili/currency.py
 
 """
 Swahili currency verbalization.
@@ -6,7 +6,7 @@ Swahili currency verbalization.
 Handles conversion of currency amounts to Swahili words.
 """
 
-from .numbers import number_to_words
+from .number import number_to_words
 
 
 # Currency definitions

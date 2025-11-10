@@ -1,4 +1,4 @@
-# normalizer/languages/swahili/time.py
+# verbalizer/languages/swahili/time.py
 
 """
 Swahili time verbalization.
@@ -8,7 +8,7 @@ In Swahili, time is counted from sunrise (7 AM = saa moja, 1 PM = saa saba, etc.
 For simplicity and clarity in TTS, we'll use the standard clock hours with 'saa' prefix.
 """
 
-from .numbers import number_to_words
+from .number import number_to_words
 
 
 def verbalize_time_24h(hours, minutes, seconds=None):

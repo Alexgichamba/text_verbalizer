@@ -5,7 +5,7 @@ Test suite for Swahili text verbalizer.
 """
 
 import pytest
-from text_verbalizer import SwahiliVerbalizer
+from verbalizer import SwahiliVerbalizer
 
 
 @pytest.fixture

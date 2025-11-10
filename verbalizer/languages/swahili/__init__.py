@@ -1,7 +1,7 @@
 """
-Swahili text normalizer.
+Swahili text verbalizer.
 
-Main normalizer class for Swahili language.
+Main verbalizer class for Swahili language.
 """
 
 from ...base import BaseNormalizer
@@ -12,9 +12,9 @@ from .time import verbalize_time as verbalize_time_sw
 from .date import parse_and_verbalize_date as verbalize_date_sw
 
 
-class SwahiliNormalizer(BaseNormalizer):
+class SwahiliVerbalizer(BaseNormalizer):
     """
-    Text normalizer for Swahili language.
+    Text verbalizer for Swahili language.
     
     Handles verbalization of:
     - Numbers (integers and decimals)
@@ -24,7 +24,7 @@ class SwahiliNormalizer(BaseNormalizer):
     """
     
     def __init__(self):
-        """Initialize Swahili normalizer."""
+        """Initialize Swahili verbalizer."""
         super().__init__()
     
     def _get_patterns(self):

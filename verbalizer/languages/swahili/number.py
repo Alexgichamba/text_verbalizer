@@ -1,4 +1,4 @@
-# normalizer/languages/swahili/number.py
+# verbalizer/languages/swahili/number.py
 
 """
 Swahili number verbalization.

@@ -1,4 +1,4 @@
-# normalizer/languages/swahili/date.py
+# verbalizer/languages/swahili/date.py
 
 """
 Swahili date verbalization.
@@ -7,7 +7,7 @@ Handles conversion of dates to Swahili words.
 Format: DD/MM/YYYY
 """
 
-from .numbers import number_to_words
+from .number import number_to_words
 
 
 # Month names in Swahili

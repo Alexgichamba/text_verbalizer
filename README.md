@@ -23,14 +23,14 @@ pip install -e .
 ## Quick Start
 
 ```python
-from normalizer import SwahiliNormalizer
+from verbalizer import SwahiliVerbalizer
 
-# Initialize normalizer
-normalizer = SwahiliNormalizer()
+# Initialize verbalizer
+verbalizer = SwahiliVerbalizer()
 
 # Normalize text
 text = "Nina KES 5000 na saa ni 14:30 tarehe 25/12/2024"
-normalized = normalizer.normalize(text)
+normalized = verbalizer.normalize(text)
 print(normalized)
 # Output: "Nina shilingi elfu tano na saa ni saa kumi na nne na dakika thelathini tarehe ishirini na tano mwezi wa Desemba mwaka elfu mbili na ishirini na nne"
 ```
@@ -40,14 +40,14 @@ print(normalized)
 ### Number Normalization
 
 ```python
-normalizer = SwahiliNormalizer()
+verbalizer = SwahiliVerbalizer()
 
 # Basic numbers
-print(normalizer.normalize("Nina watoto 3"))
+print(verbalizer.normalize("Nina watoto 3"))
 # Output: "Nina watoto tatu"
 
 # Large numbers
-print(normalizer.normalize("Bei ni 150000"))
+print(verbalizer.normalize("Bei ni 150000"))
 # Output: "Bei ni mia moja na hamsini elfu"
 ```
 
@@ -55,19 +55,19 @@ print(normalizer.normalize("Bei ni 150000"))
 
 ```python
 # Kenyan Shilling
-print(normalizer.normalize("KES 1500.50"))
+print(verbalizer.normalize("KES 1500.50"))
 # Output: "shilingi elfu moja na mia tano na senti hamsini"
 
 # Tanzanian Shilling
-print(normalizer.normalize("TZS 50000"))
+print(verbalizer.normalize("TZS 50000"))
 # Output: "shilingi elfu hamsini"
 
 # Nigerian Naira
-print(normalizer.normalize("NGN 2500"))
+print(verbalizer.normalize("NGN 2500"))
 # Output: "naira elfu mbili na mia tano"
 
 # Rwandan Franc
-print(normalizer.normalize("RWF 10000"))
+print(verbalizer.normalize("RWF 10000"))
 # Output: "faranga elfu kumi"
 ```
 
@@ -75,24 +75,24 @@ print(normalizer.normalize("RWF 10000"))
 
 ```python
 # 24-hour format
-print(normalizer.normalize("Saa ni 14:30"))
+print(verbalizer.normalize("Saa ni 14:30"))
 # Output: "Saa ni saa kumi na nne na dakika thelathini"
 
 # 12-hour format
-print(normalizer.normalize("Tutaonana 3:45 PM"))
+print(verbalizer.normalize("Tutaonana 3:45 PM"))
 # Output: "Tutaonana saa kumi na tano na dakika arobaini na tano jioni"
 ```
 
 ### Date Normalization
 
 ```python
-print(normalizer.normalize("Tarehe 15/08/2024"))
+print(verbalizer.normalize("Tarehe 15/08/2024"))
 # Output: "Tarehe tarehe kumi na tano mwezi wa Agosti mwaka elfu mbili na ishirini na nne"
 ```
 
 ## API Reference
 
-### SwahiliNormalizer
+### SwahiliVerbalizer
 
 Main class for Swahili text normalization.
 
@@ -108,7 +108,7 @@ Main class for Swahili text normalization.
 
 ```
 text-verbalizer/
-├── normalizer/
+├── verbalizer/
 │   ├── __init__.py
 │   ├── base.py              # Abstract base class
 │   ├── detector.py          # Pattern detection utilities
@@ -138,21 +138,21 @@ pytest tests/
 Run tests with coverage:
 
 ```bash
-pytest --cov=normalizer tests/
+pytest --cov=verbalizer tests/
 ```
 
 ## Adding New Languages
 
 To add support for a new language:
 
-1. Create a new directory under `normalizer/languages/[language_name]/`
+1. Create a new directory under `verbalizer/languages/[language_name]/`
 2. Implement the required modules:
    - `config.py`: Define regex patterns
    - `numbers.py`: Implement number verbalization
    - `currency.py`: Implement currency verbalization
    - `time.py`: Implement time verbalization
    - `date.py`: Implement date verbalization
-3. Create a normalizer class that inherits from `BaseNormalizer`
+3. Create a verbalizer class that inherits from `BaseNormalizer`
 4. Add tests in `tests/test_[language_name].py`
 
 ## Roadmap
