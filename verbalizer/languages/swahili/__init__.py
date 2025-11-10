@@ -6,7 +6,7 @@ Main normalizer class for Swahili language.
 
 from ...base import BaseNormalizer
 from .config import PATTERNS
-from .numbers import verbalize_number as verbalize_number_sw
+from .number import verbalize_number as verbalize_number_sw
 from .currency import verbalize_currency as verbalize_currency_sw
 from .time import verbalize_time as verbalize_time_sw
 from .date import parse_and_verbalize_date as verbalize_date_sw

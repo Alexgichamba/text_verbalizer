@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text_verbalizer"
+version = "0.1.0"
+description = "A rule-based text verbalization library for African languages"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Alex Gichamba", email = "alexgichamba@ieee.org"}
+]
+keywords = ["text-verbalization", "tts", "african-languages", "nlp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Text Processing :: Linguistic",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Alexgichamba/african-text_verbalizer"
+Repository = "https://github.com/Alexgichamba/african-text_verbalizer"
+Issues = "https://github.com/Alexgichamba/african-text_verbalizer/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["verbalizer*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=verbalizer --cov-report=term-missing"

@@ -1,3 +1,26 @@
+Metadata-Version: 2.4
+Name: text_verbalizer
+Version: 0.1.0
+Summary: A rule-based text verbalization library for African languages
+Author-email: Alex Gichamba <alexgichamba@ieee.org>
+License: MIT
+Project-URL: Homepage, https://github.com/Alexgichamba/african-text_verbalizer
+Project-URL: Repository, https://github.com/Alexgichamba/african-text_verbalizer
+Project-URL: Issues, https://github.com/Alexgichamba/african-text_verbalizer/issues
+Keywords: text-verbalization,tts,african-languages,nlp
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Text Processing :: Linguistic
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=3.0.0; extra == "dev"
+
 # Text Verbalizer
 
 A rule-based text verbalizer library for African languages, designed for speech applications.
