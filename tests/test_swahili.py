@@ -6,6 +6,7 @@ Test suite for Swahili text verbalizer.
 
 import pytest
 from verbalizer import SwahiliVerbalizer
+from verbalizer.languages.swahili.number import number_to_words
 
 
 @pytest.fixture
@@ -53,8 +54,8 @@ class TestSwahiliNumbers:
     def test_compound_hundreds(self, verbalizer):
         """Test compound numbers with hundreds."""
         assert verbalizer.normalize("150") == "mia moja na hamsini"
-        assert verbalizer.normalize("325") == "mia tatu na ishirini na tano"
-        assert verbalizer.normalize("999") == "mia tisa na tisini na tisa"
+        assert verbalizer.normalize("325") == "mia tatu ishirini na tano"
+        assert verbalizer.normalize("999") == "mia tisa tisini na tisa"
     
     def test_thousands(self, verbalizer):
         """Test thousands."""
@@ -66,8 +67,8 @@ class TestSwahiliNumbers:
     def test_compound_thousands(self, verbalizer):
         """Test compound numbers with thousands."""
         assert verbalizer.normalize("1500") == "elfu moja na mia tano"
-        assert verbalizer.normalize("2024") == "elfu mbili na ishirini na nne"
-        assert verbalizer.normalize("15250") == "elfu kumi na tano na mia mbili na hamsini"
+        assert verbalizer.normalize("2024") == "elfu mbili ishirini na nne"
+        assert verbalizer.normalize("15250") == "elfu kumi na tano mia mbili na hamsini"
     
     def test_millions(self, verbalizer):
         """Test millions."""
@@ -95,6 +96,103 @@ class TestSwahiliNumbers:
         """Test numbers within sentences."""
         assert "tatu" in verbalizer.normalize("Nina watoto 3")
         assert "kumi" in verbalizer.normalize("Bei ni 10 shilingi")
+
+
+# ---------------------------------------------------------------------------
+# Reference table for Swahili cardinals.
+#
+# The governing rule is that ``na`` is placed before the FINAL additive
+# component only; earlier components are juxtaposed. A number decomposes into
+# scale groups ("elfu mbili", "mia tatu") plus a trailing tens/ones group, and
+# only the last of those takes ``na``. A scale multiplier is a number in its
+# own right and carries its own internal ``na`` (15000 -> "elfu kumi na tano").
+#
+# Add a row here rather than a bespoke test when covering a new number.
+# ---------------------------------------------------------------------------
+NUMBER_TABLE = [
+    # --- units -------------------------------------------------------------
+    (0, "sifuri"),
+    (1, "moja"),
+    (2, "mbili"),
+    (3, "tatu"),
+    (4, "nne"),
+    (5, "tano"),
+    (6, "sita"),
+    (7, "saba"),
+    (8, "nane"),
+    (9, "tisa"),
+    # --- 10-19: single "na", nothing before it -----------------------------
+    (10, "kumi"),
+    (11, "kumi na moja"),
+    (15, "kumi na tano"),
+    (19, "kumi na tisa"),
+    # --- round tens --------------------------------------------------------
+    (20, "ishirini"),
+    (30, "thelathini"),
+    (40, "arobaini"),
+    (50, "hamsini"),
+    (60, "sitini"),
+    (70, "sabini"),
+    (80, "themanini"),
+    (90, "tisini"),
+    # --- tens + units ------------------------------------------------------
+    (21, "ishirini na moja"),
+    (45, "arobaini na tano"),
+    (99, "tisini na tisa"),
+    # --- hundreds: multiplier FOLLOWS the scale word, and 100 keeps "moja" --
+    (100, "mia moja"),
+    (200, "mia mbili"),
+    (900, "mia tisa"),
+    # --- hundreds + one trailing group: that group takes "na" --------------
+    (101, "mia moja na moja"),
+    (110, "mia moja na kumi"),
+    (150, "mia moja na hamsini"),
+    # --- hundreds + two trailing groups: only the LAST takes "na" ----------
+    # This is the case the old implementation over-generated on, emitting
+    # "mia tatu na ishirini na tano".
+    (325, "mia tatu ishirini na tano"),
+    (345, "mia tatu arobaini na tano"),
+    (999, "mia tisa tisini na tisa"),
+    # --- thousands ---------------------------------------------------------
+    (1000, "elfu moja"),
+    (2000, "elfu mbili"),
+    (10000, "elfu kumi"),
+    (50000, "elfu hamsini"),
+    (1500, "elfu moja na mia tano"),
+    (2024, "elfu mbili ishirini na nne"),
+    (2345, "elfu mbili mia tatu arobaini na tano"),
+    # multiplier carries its own "na", trailing group carries the outer one
+    (15000, "elfu kumi na tano"),
+    (15250, "elfu kumi na tano mia mbili na hamsini"),
+    (150000, "elfu mia moja na hamsini"),
+    # --- millions and billions --------------------------------------------
+    (1000000, "milioni moja"),
+    (5000000, "milioni tano"),
+    (10000000, "milioni kumi"),
+    (2500000, "milioni mbili na elfu mia tano"),
+    (1000000000, "bilioni moja"),
+    (2000000000, "bilioni mbili"),
+]
+
+
+@pytest.mark.parametrize("value,expected", NUMBER_TABLE)
+def test_number_table(value, expected):
+    """Every cardinal in the reference table spells out exactly."""
+    assert number_to_words(value) == expected
+
+
+@pytest.mark.parametrize("value,expected", NUMBER_TABLE)
+def test_number_table_via_normalize(verbalizer, value, expected):
+    """The table also holds end-to-end through ``normalize()``."""
+    assert verbalizer.normalize(str(value)) == expected
+
+
+@pytest.mark.parametrize("value,expected", NUMBER_TABLE)
+def test_na_is_never_doubled(value, expected):
+    """``na`` never appears twice in a row, and never leads or trails."""
+    words = number_to_words(value).split()
+    assert "na" not in (words[0], words[-1]) or len(words) == 1
+    assert not any(a == "na" and b == "na" for a, b in zip(words, words[1:]))
 
 
 class TestSwahiliCurrency:
@@ -195,6 +293,39 @@ class TestSwahiliTime:
         assert "saa kumi na mbili" in result
         assert "jioni" in result
     
+    def test_no_meridiem_preserves_following_space(self, verbalizer):
+        """A time with no AM/PM must not swallow the space after it.
+
+        The pattern used to end in ``\\s*(AM|PM)?\\b``, so the optional
+        meridiem matched empty *after* ``\\s*`` had already consumed the
+        separator, gluing the next word onto the output.
+        """
+        result = verbalizer.normalize("saa 14:30 tarehe")
+        assert result == "saa saa kumi na nne na dakika thelathini tarehe"
+        assert "thelathinitarehe" not in result
+
+    def test_no_meridiem_preserves_space_with_seconds(self, verbalizer):
+        """Same, for the hh:mm:ss form."""
+        result = verbalizer.normalize("14:30:45 sasa")
+        assert result.endswith("sekunde arobaini na tano sasa")
+
+    def test_meridiem_still_consumes_its_space(self, verbalizer):
+        """The space before an actual AM/PM is still part of the match."""
+        assert verbalizer.normalize("3:45 PM leo").startswith("saa kumi na tano")
+        assert verbalizer.normalize("3:45 PM leo").endswith("jioni leo")
+
+    def test_meridiem_without_space(self, verbalizer):
+        """AM/PM directly attached to the time still parses."""
+        result = verbalizer.normalize("2:30pm leo")
+        assert "saa kumi na nne" in result
+        assert result.endswith("jioni leo")
+
+    def test_digit_run_is_not_a_time(self, verbalizer):
+        """``14:305`` is not a time; the (?!\\d) guard rejects it."""
+        assert "saa kumi na nne na dakika thelathini" not in verbalizer.normalize(
+            "bei 14:305 tu"
+        )
+
     def test_time_in_context(self, verbalizer):
         """Test time within sentences."""
         result = verbalizer.normalize("Tutaonana saa 14:30")
