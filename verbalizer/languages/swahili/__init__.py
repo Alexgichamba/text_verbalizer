@@ -6,6 +6,7 @@ Main verbalizer class for Swahili language.
 
 from ...base import BaseNormalizer
 from .config import PATTERNS
+from .number import digit_string as digit_string_sw
 from .number import verbalize_number as verbalize_number_sw
 from .currency import verbalize_currency as verbalize_currency_sw
 from .time import verbalize_time as verbalize_time_sw
@@ -23,9 +24,13 @@ class SwahiliVerbalizer(BaseNormalizer):
     - Dates (DD/MM/YYYY format)
     """
     
-    def __init__(self):
-        """Initialize Swahili verbalizer."""
-        super().__init__()
+    def __init__(self, read_digits="auto", digit_threshold=None):
+        """Initialize Swahili verbalizer.
+
+        See :class:`~verbalizer.base.BaseNormalizer` for ``read_digits``
+        and ``digit_threshold``.
+        """
+        super().__init__(read_digits=read_digits, digit_threshold=digit_threshold)
     
     def _get_patterns(self):
         """Return Swahili-specific regex patterns."""
@@ -43,6 +48,18 @@ class SwahiliVerbalizer(BaseNormalizer):
         """
         return verbalize_number_sw(number_str)
     
+    def verbalize_digits(self, number_str):
+        """
+        Read a number one digit at a time (phone numbers, IDs).
+
+        Args:
+            number_str (str): String of digits
+
+        Returns:
+            str: Digits read out individually
+        """
+        return digit_string_sw(number_str)
+
     def verbalize_currency(self, match):
         """
         Convert a currency amount to Swahili words.

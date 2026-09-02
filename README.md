@@ -121,6 +121,40 @@ print(verbalizer.normalize("15/08/2024"))
 # Output: "tariki ya cumi na gatanu Kanama mu mwaka w'ibihumbi bibiri na makumyabiri na kane"
 ```
 
+### Reading digits one at a time
+
+Phone numbers, account numbers and IDs must not be read as quantities, and
+their leading zero is significant. `read_digits` controls this:
+
+```python
+verbalizer = KinyarwandaVerbalizer()          # read_digits="auto" (default)
+
+print(verbalizer.normalize("Nimero yanjye ni 0793092164"))
+# Output: "Nimero yanjye ni zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+
+print(verbalizer.normalize("Mfite 2345"))     # a plain quantity is untouched
+# Output: "Mfite ibihumbi bibiri na magana atatu na mirongo ine na gatanu"
+```
+
+| `read_digits` | behaviour |
+|---|---|
+| `"auto"` (default) | digit by digit only when the token has a leading zero |
+| `"always"` | every numeric token digit by digit |
+| `"never"` | every numeric token as a cardinal, leading zero included |
+
+A leading zero is an unambiguous signal, so `"auto"` is safe to leave on. A
+phone number written without one (`250793092164`) needs a length cut-off
+instead, which is off by default because the right value is corpus-specific:
+
+```python
+KinyarwandaVerbalizer(digit_threshold=7).normalize("250793092164")
+# "kabiri gatanu zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+```
+
+Digits take the counting series and are juxtaposed with no linking `na` -- a
+digit sequence is a list, not a sum. Currency, time and date amounts are
+unaffected; the option applies only to bare numbers.
+
 ## API Reference
 
 ### SwahiliVerbalizer / KinyarwandaVerbalizer
@@ -158,6 +192,21 @@ text-verbalizer/
 ├── requirements.txt
 └── README.md
 ```
+
+## CLI
+
+```bash
+verbalize                            # interactive REPL
+verbalize -l rw "Mfite 2345"         # one-shot
+cat lines.txt | verbalize -l sw      # one line in, one line out
+```
+
+REPL commands: `:sw` / `:rw` switch language, `:digits auto|always|never`
+switches digit reading, `:demo` runs a sample sweep, `:show <text>` prints each
+normalizer stage separately, `:q` exits.
+
+`--digits` and `--digit-threshold` set the digit-reading options from the
+command line, and `--stages` is the non-interactive form of `:show`.
 
 ## Testing
 

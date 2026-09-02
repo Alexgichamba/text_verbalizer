@@ -468,5 +468,59 @@ class TestSwahiliIndividualNormalizers:
         assert "100" in result  # Number not normalized
 
 
+class TestSwahiliDigitMode:
+    """Reading a bare run of digits one digit at a time."""
+
+    def test_leading_zero_is_read_as_digits_by_default(self):
+        """A leading zero marks an identifier, so "auto" reads it out."""
+        v = SwahiliVerbalizer()
+        assert v.normalize("0712345678") == "sifuri saba moja mbili tatu nne tano sita saba nane"
+
+    def test_leading_zero_survives(self):
+        """The zero itself must not be lost, as int() would lose it."""
+        v = SwahiliVerbalizer()
+        assert v.normalize("0712345678").startswith("sifuri")
+
+    def test_ordinary_number_still_reads_as_a_cardinal(self):
+        """"auto" must not disturb a plain quantity."""
+        v = SwahiliVerbalizer()
+        assert v.normalize("2345") == number_to_words(2345)
+
+    def test_never_forces_the_cardinal_reading(self):
+        v = SwahiliVerbalizer(read_digits="never")
+        assert v.normalize("0712345678") == number_to_words(712345678)
+
+    def test_always_forces_the_digit_reading(self):
+        v = SwahiliVerbalizer(read_digits="always")
+        assert v.normalize("2345") == "mbili tatu nne tano"
+
+    def test_digit_threshold_catches_a_number_without_a_leading_zero(self):
+        """A phone number written without its leading zero needs a threshold."""
+        plain = SwahiliVerbalizer()
+        assert plain.normalize("254712345678") == number_to_words(254712345678)
+
+        thresholded = SwahiliVerbalizer(digit_threshold=7)
+        assert thresholded.normalize("254712345678") == "mbili tano nne saba moja mbili tatu nne tano sita saba nane"
+
+    def test_threshold_leaves_short_numbers_alone(self):
+        v = SwahiliVerbalizer(digit_threshold=7)
+        assert v.normalize("345") == number_to_words(345)
+
+    def test_digits_are_juxtaposed_without_na(self):
+        """A digit sequence is a list, not a sum, so it takes no "na"."""
+        v = SwahiliVerbalizer(read_digits="always")
+        assert " na " not in v.normalize("0712345678")
+        assert "n'" not in v.normalize("0712345678")
+
+    def test_invalid_mode_is_rejected(self):
+        with pytest.raises(ValueError):
+            SwahiliVerbalizer(read_digits="sometimes")
+
+    def test_currency_is_unaffected(self):
+        """Digit mode applies to bare numbers, not to currency amounts."""
+        v = SwahiliVerbalizer(read_digits="always")
+        assert "mia moja" in v.normalize("KES 100")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

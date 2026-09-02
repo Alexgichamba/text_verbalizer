@@ -15,9 +15,63 @@ class BaseNormalizer(ABC):
     All language-specific normalizers must implement the abstract methods.
     """
     
-    def __init__(self):
-        """Initialize the verbalizer with language-specific patterns."""
+    #: Values accepted by the ``read_digits`` option.
+    READ_DIGITS_MODES = ("auto", "always", "never")
+
+    def __init__(self, read_digits="auto", digit_threshold=None):
+        """Initialize the verbalizer with language-specific patterns.
+
+        Args:
+            read_digits (str): How to read a bare run of digits.
+
+                * ``"auto"`` (default) -- read a token digit by digit only
+                  when it has a leading zero, which is an unambiguous signal
+                  that it is an identifier (a phone number, an account or ID
+                  number) rather than a quantity. Everything else is read as
+                  a cardinal.
+                * ``"always"`` -- read every numeric token digit by digit.
+                * ``"never"`` -- read every numeric token as a cardinal, even
+                  one with a leading zero.
+
+            digit_threshold (int, optional): Under ``"auto"``, also read a
+                token digit by digit once it has at least this many digits.
+                Off by default, because the cut-off is corpus-specific: a
+                phone number written without its leading zero (``250788123456``)
+                wants it, but a genuine large quantity does not. 7 is a
+                reasonable setting for text that contains phone numbers.
+        """
+        if read_digits not in self.READ_DIGITS_MODES:
+            raise ValueError(
+                "read_digits must be one of %r, got %r"
+                % (self.READ_DIGITS_MODES, read_digits)
+            )
+        self.read_digits = read_digits
+        self.digit_threshold = digit_threshold
         self.patterns = self._get_patterns()
+
+    def should_read_digits(self, number_str):
+        """Return whether ``number_str`` should be read digit by digit."""
+        if self.read_digits == "never":
+            return False
+        if self.read_digits == "always":
+            return True
+
+        # "auto": a leading zero marks an identifier, not a quantity.
+        digits = number_str.lstrip("+-")
+        if len(digits) > 1 and digits.startswith("0") and not digits.startswith("0."):
+            return True
+        if self.digit_threshold is not None:
+            return sum(c.isdigit() for c in digits) >= self.digit_threshold
+        return False
+
+    def verbalize_digits(self, number_str):
+        """Read ``number_str`` one digit at a time.
+
+        Subclasses override this with their own digit names. The default
+        keeps older subclasses working by falling back to the cardinal
+        reading.
+        """
+        return self.verbalize_number(number_str)
     
     @abstractmethod
     def _get_patterns(self):
@@ -93,7 +147,10 @@ class BaseNormalizer(ABC):
         """
         def replace_number(match):
             try:
-                return self.verbalize_number(match.group())
+                token = match.group()
+                if self.should_read_digits(token):
+                    return self.verbalize_digits(token)
+                return self.verbalize_number(token)
             except Exception as e:
                 warnings.warn(f"Failed to normalize number '{match.group()}': {str(e)}")
                 return match.group()
