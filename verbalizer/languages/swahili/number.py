@@ -40,90 +40,66 @@ MILLION = "milioni"
 BILLION = "bilioni"
 
 
+def _join_components(parts):
+    """Join additive components with Swahili ``na``.
+
+    Swahili places ``na`` before the *final* component only; the earlier
+    components are simply juxtaposed. So 325 is "mia tatu ishirini na tano",
+    not "mia tatu na ishirini na tano".
+    """
+    if len(parts) == 1:
+        return parts[0]
+    return " ".join(parts[:-1]) + " na " + parts[-1]
+
+
+def _components(n):
+    """Decompose a non-negative integer into its additive spoken components.
+
+    Each component is a self-contained group ("elfu mbili", "mia tatu",
+    "arobaini", "tano"); the caller joins them with :func:`_join_components`.
+    """
+    if n == 0:
+        return [ONES[0]]
+
+    for scale_value, scale_word in (
+        (1_000_000_000, BILLION),
+        (1_000_000, MILLION),
+        (1000, THOUSAND),
+        (100, HUNDRED),
+    ):
+        if n >= scale_value:
+            multiplier, remainder = divmod(n, scale_value)
+            # The multiplier is a number in its own right and takes its own
+            # internal "na" (15000 -> "elfu kumi na tano").
+            parts = ["%s %s" % (scale_word, _join_components(_components(multiplier)))]
+            if remainder:
+                parts.extend(_components(remainder))
+            return parts
+
+    if n >= 10:
+        tens_digit, ones_digit = divmod(n, 10)
+        parts = [TENS[tens_digit * 10]]
+        if ones_digit:
+            parts.append(ONES[ones_digit])
+        return parts
+
+    return [ONES[n]]
+
+
 def number_to_words(n):
     """
     Convert an integer to Swahili words.
-    
+
     Args:
         n (int): Number to convert (0 to 999,999,999,999)
-        
+
     Returns:
         str: Swahili word representation
     """
-    if n == 0:
-        return ONES[0]
-    
     if n < 0:
         return "hasi " + number_to_words(-n)
-    
-    # Handle billions
-    if n >= 1_000_000_000:
-        billions = n // 1_000_000_000
-        remainder = n % 1_000_000_000
-        
-        if billions == 1:
-            result = f"{BILLION} moja"
-        else:
-            result = f"{BILLION} {number_to_words(billions)}"
-        
-        if remainder > 0:
-            result += f" na {number_to_words(remainder)}"
-        return result
-    
-    # Handle millions
-    if n >= 1_000_000:
-        millions = n // 1_000_000
-        remainder = n % 1_000_000
-        
-        if millions == 1:
-            result = f"{MILLION} moja"
-        else:
-            result = f"{MILLION} {number_to_words(millions)}"
-        
-        if remainder > 0:
-            result += f" na {number_to_words(remainder)}"
-        return result
-    
-    # Handle thousands
-    if n >= 1000:
-        thousands = n // 1000
-        remainder = n % 1000
-        
-        if thousands == 1:
-            result = f"{THOUSAND} moja"
-        else:
-            result = f"{THOUSAND} {number_to_words(thousands)}"
-        
-        if remainder > 0:
-            result += f" na {number_to_words(remainder)}"
-        return result
-    
-    # Handle hundreds
-    if n >= 100:
-        hundreds = n // 100
-        remainder = n % 100
-        
-        if hundreds == 1:
-            result = f"{HUNDRED} moja"
-        else:
-            result = f"{HUNDRED} {number_to_words(hundreds)}"
-        
-        if remainder > 0:
-            result += f" na {number_to_words(remainder)}"
-        return result
-    
-    # Handle 10-99
-    if n >= 10:
-        tens_digit = (n // 10) * 10
-        ones_digit = n % 10
-        
-        if ones_digit == 0:
-            return TENS[tens_digit]
-        else:
-            return f"{TENS[tens_digit]} na {ONES[ones_digit]}"
-    
-    # Handle 1-9
-    return ONES[n]
+
+    return _join_components(_components(n))
 
 
 def verbalize_number(number_str):

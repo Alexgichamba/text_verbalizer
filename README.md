@@ -32,7 +32,7 @@ verbalizer = SwahiliVerbalizer()
 text = "Nina KES 5000 na saa ni 14:30 tarehe 25/12/2024"
 normalized = verbalizer.normalize(text)
 print(normalized)
-# Output: "Nina shilingi elfu tano na saa ni saa kumi na nne na dakika thelathini tarehe ishirini na tano mwezi wa Desemba mwaka elfu mbili na ishirini na nne"
+# Output: "Nina shilingi elfu tano na saa ni saa kumi na nne na dakika thelathini tarehe tarehe ishirini na tano mwezi wa Desemba mwaka elfu mbili ishirini na nne"
 ```
 
 ## Usage Examples
@@ -48,7 +48,7 @@ print(verbalizer.normalize("Nina watoto 3"))
 
 # Large numbers
 print(verbalizer.normalize("Bei ni 150000"))
-# Output: "Bei ni mia moja na hamsini elfu"
+# Output: "Bei ni elfu mia moja na hamsini"
 ```
 
 ### Currency Normalization
