@@ -21,9 +21,13 @@ PATTERNS = {
         r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b'
     ),
     
-    # Time: Matches both 12h (14:30, 2:30 PM) and 24h (14:30:45) formats
+    # Time: Matches both 12h (14:30, 2:30 PM) and 24h (14:30:45) formats.
+    # The meridiem and the space in front of it form a single optional unit, so
+    # that a time with no meridiem does not swallow the space that follows it
+    # ("saa 14:30 tarehe" must not verbalize to "...thelathinitarehe").
+    # (?!\d) stops a run of digits such as "14:305" from matching as "14:30".
     'time': re.compile(
-        r'\b(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM|am|pm)?\b'
+        r'\b(\d{1,2}):(\d{2})(?::(\d{2}))?(?!\d)(?:[ \t]*([AaPp][Mm])\b)?'
     ),
     
     # Plain numbers (integers and decimals)

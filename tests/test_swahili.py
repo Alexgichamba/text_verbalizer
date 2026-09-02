@@ -293,6 +293,39 @@ class TestSwahiliTime:
         assert "saa kumi na mbili" in result
         assert "jioni" in result
     
+    def test_no_meridiem_preserves_following_space(self, verbalizer):
+        """A time with no AM/PM must not swallow the space after it.
+
+        The pattern used to end in ``\\s*(AM|PM)?\\b``, so the optional
+        meridiem matched empty *after* ``\\s*`` had already consumed the
+        separator, gluing the next word onto the output.
+        """
+        result = verbalizer.normalize("saa 14:30 tarehe")
+        assert result == "saa saa kumi na nne na dakika thelathini tarehe"
+        assert "thelathinitarehe" not in result
+
+    def test_no_meridiem_preserves_space_with_seconds(self, verbalizer):
+        """Same, for the hh:mm:ss form."""
+        result = verbalizer.normalize("14:30:45 sasa")
+        assert result.endswith("sekunde arobaini na tano sasa")
+
+    def test_meridiem_still_consumes_its_space(self, verbalizer):
+        """The space before an actual AM/PM is still part of the match."""
+        assert verbalizer.normalize("3:45 PM leo").startswith("saa kumi na tano")
+        assert verbalizer.normalize("3:45 PM leo").endswith("jioni leo")
+
+    def test_meridiem_without_space(self, verbalizer):
+        """AM/PM directly attached to the time still parses."""
+        result = verbalizer.normalize("2:30pm leo")
+        assert "saa kumi na nne" in result
+        assert result.endswith("jioni leo")
+
+    def test_digit_run_is_not_a_time(self, verbalizer):
+        """``14:305`` is not a time; the (?!\\d) guard rejects it."""
+        assert "saa kumi na nne na dakika thelathini" not in verbalizer.normalize(
+            "bei 14:305 tu"
+        )
+
     def test_time_in_context(self, verbalizer):
         """Test time within sentences."""
         result = verbalizer.normalize("Tutaonana saa 14:30")
