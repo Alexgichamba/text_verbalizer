@@ -240,3 +240,24 @@ def verbalize_number(number_str):
         return result
 
     return number_to_words(int(number_str))
+
+
+def digit_string(number_str):
+    """Read a run of digits one at a time, in Kinyarwanda.
+
+    Used for identifiers -- phone numbers, account and ID numbers -- where
+    the cardinal reading is wrong and a leading zero is significant:
+    "0793092164" is "zeru karindwi icyenda gatatu ...", not a number in the
+    hundreds of millions.
+
+    Digits take the counting (citation) series, and are juxtaposed with no
+    linking "na" -- a digit sequence is a list, not a sum.
+    """
+    words = []
+    for char in number_str.strip():
+        if char.isdigit():
+            words.append(COUNTING[int(char)])
+        elif char == '.':
+            words.append(POINT)
+        # any other character (a separator such as - or /) is simply dropped
+    return " ".join(words)

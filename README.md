@@ -121,6 +121,80 @@ print(verbalizer.normalize("15/08/2024"))
 # Output: "tariki ya cumi na gatanu Kanama mu mwaka w'ibihumbi bibiri na makumyabiri na kane"
 ```
 
+### Reading digits one at a time
+
+Phone numbers, account numbers and IDs must not be read as quantities, and
+their leading zero is significant. `read_digits` controls this:
+
+```python
+verbalizer = KinyarwandaVerbalizer()          # read_digits="auto" (default)
+
+print(verbalizer.normalize("Nimero yanjye ni 0793092164"))
+# Output: "Nimero yanjye ni zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+
+print(verbalizer.normalize("Mfite 2345"))     # a plain quantity is untouched
+# Output: "Mfite ibihumbi bibiri na magana atatu na mirongo ine na gatanu"
+```
+
+| `read_digits` | behaviour |
+|---|---|
+| `"auto"` (default) | digit by digit only when the token has a leading zero |
+| `"always"` | every numeric token digit by digit |
+| `"never"` | every numeric token as a cardinal, leading zero included |
+
+A leading zero is an unambiguous signal, so `"auto"` is safe to leave on. A
+phone number written without one (`250793092164`) needs a length cut-off
+instead, which is off by default because the right value is corpus-specific:
+
+```python
+KinyarwandaVerbalizer(digit_threshold=7).normalize("250793092164")
+# "kabiri gatanu zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+```
+
+Digits take the counting series and are juxtaposed with no linking `na` -- a
+digit sequence is a list, not a sum. Currency, time and date amounts are
+unaffected; the option applies only to bare numbers.
+
+### Inline control tags
+
+TTS front-ends carry inline markup in square brackets -- OmniVoice uses
+`[laughter]` for non-verbal tags and `[B EY1 S]` for CMU pronunciation
+overrides. That markup is not speech, so bracketed spans are held out of
+normalization and re-inserted verbatim; a stress digit or a bracketed count
+is never read aloud.
+
+```python
+verbalizer.normalize("Mfite 12 [laughter] amafaranga")
+# "Mfite cumi na kabiri [laughter] amafaranga"
+
+verbalizer.normalize("The [B EY1 S] guitar.")   # unchanged
+```
+
+Pass `protect_brackets=False` to normalize inside brackets too.
+
+### Use with a TTS model
+
+The verbalizer is a plain text-to-text function, so it goes in front of any
+model without patching it. With OmniVoice:
+
+```python
+from verbalizer import KinyarwandaVerbalizer
+
+rw = KinyarwandaVerbalizer()
+audio = model.generate(text=rw.normalize(text), language="rw")
+```
+
+Different sequences can take different settings -- a year is a quantity, an
+account number is not:
+
+```python
+quantity = KinyarwandaVerbalizer(read_digits="never")
+identifier = KinyarwandaVerbalizer(read_digits="always")
+
+quantity.normalize("Yavutse mu 2006")      # "... ibihumbi bibiri na gatandatu"
+identifier.normalize("Konti yawe ni 122006")  # "... rimwe kabiri kabiri zeru zeru gatandatu"
+```
+
 ## API Reference
 
 ### SwahiliVerbalizer / KinyarwandaVerbalizer
@@ -130,7 +204,8 @@ same interface.
 
 #### Methods
 
-- `normalize(text)`: Apply all normalizations to text
+- `normalize(text)`: Apply all normalizations to text, preserving bracketed
+  control tags
 - `normalize_numbers(text)`: Normalize only numbers
 - `normalize_currency(text)`: Normalize only currency
 - `normalize_time(text)`: Normalize only time expressions
@@ -158,6 +233,21 @@ text-verbalizer/
 ├── requirements.txt
 └── README.md
 ```
+
+## CLI
+
+```bash
+verbalize                            # interactive REPL
+verbalize -l rw "Mfite 2345"         # one-shot
+cat lines.txt | verbalize -l sw      # one line in, one line out
+```
+
+REPL commands: `:sw` / `:rw` switch language, `:digits auto|always|never`
+switches digit reading, `:demo` runs a sample sweep, `:show <text>` prints each
+normalizer stage separately, `:q` exits.
+
+`--digits` and `--digit-threshold` set the digit-reading options from the
+command line, and `--stages` is the non-interactive form of `:show`.
 
 ## Testing
 

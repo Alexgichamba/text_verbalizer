@@ -6,6 +6,7 @@ Main verbalizer class for Kinyarwanda language.
 
 from ...base import BaseNormalizer
 from .config import PATTERNS
+from .number import digit_string as digit_string_rw
 from .number import verbalize_number as verbalize_number_rw
 from .currency import verbalize_currency as verbalize_currency_rw
 from .time import verbalize_time as verbalize_time_rw
@@ -23,9 +24,18 @@ class KinyarwandaVerbalizer(BaseNormalizer):
     - Dates (DD/MM/YYYY format)
     """
 
-    def __init__(self):
-        """Initialize Kinyarwanda verbalizer."""
-        super().__init__()
+    def __init__(self, read_digits="auto", digit_threshold=None,
+                 protect_brackets=True):
+        """Initialize Kinyarwanda verbalizer.
+
+        See :class:`~verbalizer.base.BaseNormalizer` for ``read_digits``,
+        ``digit_threshold`` and ``protect_brackets``.
+        """
+        super().__init__(
+            read_digits=read_digits,
+            digit_threshold=digit_threshold,
+            protect_brackets=protect_brackets,
+        )
 
     def _get_patterns(self):
         """Return Kinyarwanda-specific regex patterns."""
@@ -42,6 +52,18 @@ class KinyarwandaVerbalizer(BaseNormalizer):
             str: Verbalized number in Kinyarwanda
         """
         return verbalize_number_rw(number_str)
+
+    def verbalize_digits(self, number_str):
+        """
+        Read a number one digit at a time (phone numbers, IDs).
+
+        Args:
+            number_str (str): String of digits
+
+        Returns:
+            str: Digits read out individually
+        """
+        return digit_string_rw(number_str)
 
     def verbalize_currency(self, match):
         """

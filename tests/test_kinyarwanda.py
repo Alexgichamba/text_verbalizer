@@ -331,5 +331,59 @@ class TestKinyarwandaIndividualNormalizers:
         assert "100" in result
 
 
+class TestKinyarwandaDigitMode:
+    """Reading a bare run of digits one digit at a time."""
+
+    def test_leading_zero_is_read_as_digits_by_default(self):
+        """A leading zero marks an identifier, so "auto" reads it out."""
+        v = KinyarwandaVerbalizer()
+        assert v.normalize("0793092164") == "zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+
+    def test_leading_zero_survives(self):
+        """The zero itself must not be lost, as int() would lose it."""
+        v = KinyarwandaVerbalizer()
+        assert v.normalize("0793092164").startswith("zeru")
+
+    def test_ordinary_number_still_reads_as_a_cardinal(self):
+        """"auto" must not disturb a plain quantity."""
+        v = KinyarwandaVerbalizer()
+        assert v.normalize("2345") == number_to_words(2345)
+
+    def test_never_forces_the_cardinal_reading(self):
+        v = KinyarwandaVerbalizer(read_digits="never")
+        assert v.normalize("0793092164") == number_to_words(793092164)
+
+    def test_always_forces_the_digit_reading(self):
+        v = KinyarwandaVerbalizer(read_digits="always")
+        assert v.normalize("2345") == "kabiri gatatu kane gatanu"
+
+    def test_digit_threshold_catches_a_number_without_a_leading_zero(self):
+        """A phone number written without its leading zero needs a threshold."""
+        plain = KinyarwandaVerbalizer()
+        assert plain.normalize("250793092164") == number_to_words(250793092164)
+
+        thresholded = KinyarwandaVerbalizer(digit_threshold=7)
+        assert thresholded.normalize("250793092164") == "kabiri gatanu zeru karindwi icyenda gatatu zeru icyenda kabiri rimwe gatandatu kane"
+
+    def test_threshold_leaves_short_numbers_alone(self):
+        v = KinyarwandaVerbalizer(digit_threshold=7)
+        assert v.normalize("345") == number_to_words(345)
+
+    def test_digits_are_juxtaposed_without_na(self):
+        """A digit sequence is a list, not a sum, so it takes no "na"."""
+        v = KinyarwandaVerbalizer(read_digits="always")
+        assert " na " not in v.normalize("0793092164")
+        assert "n'" not in v.normalize("0793092164")
+
+    def test_invalid_mode_is_rejected(self):
+        with pytest.raises(ValueError):
+            KinyarwandaVerbalizer(read_digits="sometimes")
+
+    def test_currency_is_unaffected(self):
+        """Digit mode applies to bare numbers, not to currency amounts."""
+        v = KinyarwandaVerbalizer(read_digits="always")
+        assert "ijana" in v.normalize("RWF 100")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

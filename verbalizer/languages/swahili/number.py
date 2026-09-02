@@ -130,3 +130,20 @@ def verbalize_number(number_str):
     
     # Handle integers
     return number_to_words(int(number_str))
+
+def digit_string(number_str):
+    """Read a run of digits one at a time, in Swahili.
+
+    Used for identifiers -- phone numbers, account and ID numbers -- where
+    the cardinal reading is wrong and a leading zero is significant:
+    "0712345678" is "sifuri saba moja mbili ...", not a number in the
+    billions. Unlike a cardinal, the digits are juxtaposed with no "na".
+    """
+    words = []
+    for char in number_str.strip():
+        if char.isdigit():
+            words.append(ONES[int(char)])
+        elif char == '.':
+            words.append("nukta")
+        # any other character (a separator such as - or /) is simply dropped
+    return " ".join(words)
