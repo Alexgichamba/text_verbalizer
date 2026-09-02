@@ -5,6 +5,7 @@ A rule-based text normalization library for African languages.
 """
 
 from .languages.swahili import SwahiliVerbalizer
+from .languages.kinyarwanda import KinyarwandaVerbalizer
 
 __version__ = "0.1.0"
-__all__ = ['SwahiliVerbalizer']
+__all__ = ['SwahiliVerbalizer', 'KinyarwandaVerbalizer']

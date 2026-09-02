@@ -13,6 +13,17 @@ A rule-based text verbalizer library for African languages, designed for speech 
 ## Currently Supported Languages
 
 - **Swahili** (Kiswahili) - Full support
+- **Kinyarwanda** - Full support (numbers, currency, time, dates)
+
+> **Note on Kinyarwanda.** Numerals carry noun-class concord: a multiplier
+> agrees with the class of the scale word it modifies, so the same stem
+> surfaces as `gatatu` (3), `mirongo itatu` (30), `magana atatu` (300) and
+> `ibihumbi bitatu` (3000). A bare number in running text has no noun to agree
+> with, so units use the counting/citation series. An attributive reading
+> (`abantu babiri`, `ibitabo bibiri`) needs the counted noun and is out of
+> reach for a context-free verbalizer. Forms marked `NEEDS-REVIEW` in
+> `tests/test_kinyarwanda.py` are the ones awaiting native-speaker
+> confirmation.
 
 ## Installation
 
@@ -90,11 +101,32 @@ print(verbalizer.normalize("Tarehe 15/08/2024"))
 # Output: "Tarehe tarehe kumi na tano mwezi wa Agosti mwaka elfu mbili na ishirini na nne"
 ```
 
+### Kinyarwanda
+
+```python
+from verbalizer import KinyarwandaVerbalizer
+
+verbalizer = KinyarwandaVerbalizer()
+
+print(verbalizer.normalize("Mfite amafaranga 2345"))
+# Output: "Mfite amafaranga ibihumbi bibiri na magana atatu na mirongo ine na gatanu"
+
+print(verbalizer.normalize("RWF 10000"))
+# Output: "amafaranga y'u Rwanda ibihumbi icumi"
+
+print(verbalizer.normalize("Tuzahura saa 14:30"))
+# Output: "Tuzahura saa saa cumi na kane n'iminota mirongo itatu"
+
+print(verbalizer.normalize("15/08/2024"))
+# Output: "tariki ya cumi na gatanu Kanama mu mwaka w'ibihumbi bibiri na makumyabiri na kane"
+```
+
 ## API Reference
 
-### SwahiliVerbalizer
+### SwahiliVerbalizer / KinyarwandaVerbalizer
 
-Main class for Swahili text normalization.
+Main classes for Swahili and Kinyarwanda text normalization. Both expose the
+same interface.
 
 #### Methods
 
@@ -157,8 +189,8 @@ To add support for a new language:
 
 ## Roadmap
 
-- [ ] Complete Swahili implementation
+- [x] Complete Swahili implementation
+- [x] Add Kinyarwanda support
 - [ ] Add Hausa support
-- [ ] Add Kinyarwanda support
 - [ ] Add Yoruba support
 - [ ] Add more currency types
