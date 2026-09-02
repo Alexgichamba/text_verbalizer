@@ -24,13 +24,18 @@ class SwahiliVerbalizer(BaseNormalizer):
     - Dates (DD/MM/YYYY format)
     """
     
-    def __init__(self, read_digits="auto", digit_threshold=None):
+    def __init__(self, read_digits="auto", digit_threshold=None,
+                 protect_brackets=True):
         """Initialize Swahili verbalizer.
 
-        See :class:`~verbalizer.base.BaseNormalizer` for ``read_digits``
-        and ``digit_threshold``.
+        See :class:`~verbalizer.base.BaseNormalizer` for ``read_digits``,
+        ``digit_threshold`` and ``protect_brackets``.
         """
-        super().__init__(read_digits=read_digits, digit_threshold=digit_threshold)
+        super().__init__(
+            read_digits=read_digits,
+            digit_threshold=digit_threshold,
+            protect_brackets=protect_brackets,
+        )
     
     def _get_patterns(self):
         """Return Swahili-specific regex patterns."""
